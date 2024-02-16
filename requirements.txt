@@ -5,3 +5,4 @@ Flask~=2.3
 pocketsphinx~=5.0.3
 flask-socketio~=5.1.1
 gunicorn
+speechrecognition~=3.8.1
