@@ -7,7 +7,6 @@ import time
 import threading
 from flask_socketio import SocketIO
 import speech_recognition as sr
-from pocketsphinx import LiveSpeech
 import os
 
 app = Flask(__name__, static_url_path='/static')
