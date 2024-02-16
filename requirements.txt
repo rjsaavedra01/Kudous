@@ -5,6 +5,4 @@ pandas~=2.1.4
 numpy~=1.26.2
 seaborn
 Flask~=3.0.0
-Flask-SocketIO~=5.1.1
-speechrecognition==3.8.1
 Gunicorn
