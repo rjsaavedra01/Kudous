@@ -1,0 +1,808 @@
+<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/html">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"> <!-- Add viewport meta tag for responsiveness -->
+  <title>Sample</title>
+  <link rel="stylesheet" href="/static/instyles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat%3Awght%40300%3B400%3B800&display=swap&fbclid=IwAR1ovQ69N96BNztaJoMKA0Yidmt4b1jNLdZ-srzBOZyI7gOh94xVzmu6NB4">
+</head>
+
+<body>
+    <div id="nav_container">
+        <a href="index.html" class="logo">
+            <img src="/static/image/CoMute Logo.svg" alt="SPEAKiT Logo" class="logo-light">
+        </a>
+    </div>
+    <div class="container">
+        <div class="column1">
+            <img id="video_feed" src="{{ url_for('video_feed') }}"/>
+        </div>
+
+        <div class="column2">
+            <div id="predicted_text_container">
+                <!-- Displayed predicted text -->
+                <textarea id="predicted_text_content" style="font-size: 20px; padding: 10px;" placeholder="Translation..." readonly></textarea>
+                <div id="btn">
+                    <!-- Copy button -->
+                    <button class="icon-button" id="copy_button" onclick="copyPredictedText()" style="border: none; background: none; height: 10px;">
+                        <i class="fa-regular fa-paste fa-xl" style="color: #0478FD;"></i>
+                    </button>
+                    <!-- Delete button -->
+                    <form id="delete_form" onsubmit="return false;">
+                        <button type="button" onclick="deleteLastPrediction()" class="delete_button" style="border: none; background: none;"><i class="fa-solid fa-trash fa-xl" style="color: #0478FD;"></i></button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="button_container">
+        <button id="speak_button" class="icon-button" onclick="speakPredictedText()">
+            <i class="fa-solid fa-volume-high" style="color: #0478fd; font-size: 30px;"></i><br><span>Speak iT</span>
+        </button>
+        <button id="toggle_camera_button" class="icon-button camera-on" onclick="toggleCamera()">
+            <i class="fa-solid fa-camera" style="color: #0478fd; font-size: 30px;"></i><br><span>On/Off Translation</span>
+        </button>
+
+        <button id="speech_to_text_button" class="icon-button" onclick="openOverlay()">
+            <i class="fa-solid fa-microphone-lines" style="color: #0478fd; font-size: 30px;"></i><br><span>Speech to Text</span>
+        </button>
+        <button id="dots_button" class="icon-button" onclick="openSecondOverlay()">
+            <i class="fa-solid fa-ear-deaf" style="color: #0478fd; font-size: 30px;"></i><br><span>Sign to Text</span>
+        </button>
+
+        <!-- New button for switching between front and rear cameras -->
+        <button id="switch_camera_button" class="icon-button" onclick="switchCameraBasedOnDevice()">
+            <i class="fa-solid fa-arrows-rotate" style="color: #0478fd; font-size: 30px;"></i><br><span>Switch Camera</span>
+        </button>
+    </div>
+
+
+
+
+
+
+
+
+
+<!--    SPEAK OVERLAY   -->
+    <div id="overlay" class="overlay">
+            <div id="modal">
+                 <div class="icon">
+                    <div class="bar" style="background-color: #3498db;"></div>
+                    <div class="bar" style="background-color: #e74c3c; margin-left: 50px;"></div>
+                    <div class="bar" style="background-color: #f1c40f; margin-left: 100px;"></div>
+                    <div class="bar" style="background-color: #2eb869; margin-left: 150px;"></div>
+                 </div>
+                <span class="close-button" onclick="closeOverlay()">&times</span>
+                <div class="g_container">
+                    <textarea id="output" style="border: 1px solid; padding: 10px;" placeholder="Hello SpeakiT"></textarea><br>
+                    <button id="start" style="border: none;">Start</button>
+                    <button id="stop" style="border: none;">Stop</button>
+                    <button id="cancel" style="border: none;">Cancel</button>
+                    <select id="country"></select>
+                    <select id="countryLang"></select>
+                    <div id="confd" style="margin-top: 30px; margin-bottom: 30px;">----</div>
+                </div>
+            </div>
+    </div>
+
+
+
+
+
+<!--    SECOND OVERLAY-->
+    <!-- Second Overlay for settings -->
+    <div id="overlay2" class="overlay">
+        <div id="modal2">
+            <span class="close-button2" onclick="closeSecondOverlay()">&times;</span>
+        <div>
+        <h1>Speech to Sign</h1>
+
+                <div id="container">
+                    <div id="videoColumn">
+                        <video id="videoPlayer" autoplay muted>
+                            Your browser does not support the video tag.
+                        </video>
+
+                        <div id="videoOverlay">
+                            <video id="overlayVideo" autoplay muted loop>
+                                <source src="/static/mp4/overlay.mp4" type="video/mp4">
+                                Your browser does not support the video tag.
+                            </video>
+                        </div>
+                    </div>
+
+                    <div id="textColumn">
+                        <div id="textContainer">
+                            <label for="convertedText" style="padding-top: 30px;">SPEAKiT</label>
+                            <input type="text" id="convertedText" placeholder="SpeakiT Internet" readonly>
+
+                            <label for="convertedTextAll">You've said</label>
+                            <textarea id="convertedTextAll" readonly rows="4" class="textarea" placeholder="Nice to meet you..."></textarea>
+
+                            <form id="userInputForm" onsubmit="return submitUserInput();" class="flex-container">
+                                <label for="userInput">WRITEiT:</label>
+                                <input type="text" id="userInput" name="userInput" placeholder="Hello" required>
+                                <button type="submit">SUBMiT</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="toggleButtonContainer">
+                    <div style="margin: 10px; font-size: 13px; text-align: center;">
+                        <button class="toggleButton" onclick="toggleRecognition()">
+                            <img class="buttonIcon" src="/static/image/mic.svg" alt="Microphone On">
+                        </button><span>Mic On/Off</span>
+                    </div>
+                    <div style="margin: 10px; font-size: 13px; text-align: center;">
+                        <button class="pronounceButton" onclick="pronounceText()">
+                            <img class="buttonIcon" src="/static/image/speak.svg" alt="Pronounce">
+                        </button><span>SPEAKiT</span>
+                    </div>
+                    <div style="margin: 10px; font-size: 13px; text-align: center;">
+                        <button id="copyButton" class="copyButton" onclick="copyText()">
+                            <img class="buttonIcon" id="copyButtonIcon" src="/static/image/copy.svg" alt="Copy">
+                        </button><span>Copy Text</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
+    <script>
+            var output = document.getElementById("output");
+            var start = document.getElementById("start");
+            var stop = document.getElementById("stop");
+            var cancel = document.getElementById("cancel");
+            var country = document.getElementById("country");
+            var countryLang = document.getElementById("countryLang");
+            var confd = document.getElementById("confd");
+
+            // now lets use web speech api
+            var speechRecognition = speechRecognition || webkitSpeechRecognition;
+            var recognizer = new speechRecognition();
+            // new get languages from array supported by api
+            // first copy array from a website
+
+                    var langList = [['Afrikaans',       ['af-ZA']],
+             ['አማርኛ',           ['am-ET']],
+             ['Azərbaycanca',    ['az-AZ']],
+             ['বাংলা',            ['bn-BD', 'বাংলাদেশ'],
+                                 ['bn-IN', 'ভারত']],
+             ['Bahasa Indonesia',['id-ID']],
+             ['Bahasa Melayu',   ['ms-MY']],
+             ['Català',          ['ca-ES']],
+             ['Čeština',         ['cs-CZ']],
+             ['Dansk',           ['da-DK']],
+             ['Deutsch',         ['de-DE']],
+             ['English',         ['en-AU', 'Australia'],
+                                 ['en-CA', 'Canada'],
+                                 ['en-IN', 'India'],
+                                 ['en-KE', 'Kenya'],
+                                 ['en-TZ', 'Tanzania'],
+                                 ['en-GH', 'Ghana'],
+                                 ['en-NZ', 'New Zealand'],
+                                 ['en-NG', 'Nigeria'],
+                                 ['en-ZA', 'South Africa'],
+                                 ['en-PH', 'Philippines'],
+                                 ['en-GB', 'United Kingdom'],
+                                 ['en-US', 'United States']],
+             ['Español',         ['es-AR', 'Argentina'],
+                                 ['es-BO', 'Bolivia'],
+                                 ['es-CL', 'Chile'],
+                                 ['es-CO', 'Colombia'],
+                                 ['es-CR', 'Costa Rica'],
+                                 ['es-EC', 'Ecuador'],
+                                 ['es-SV', 'El Salvador'],
+                                 ['es-ES', 'España'],
+                                 ['es-US', 'Estados Unidos'],
+                                 ['es-GT', 'Guatemala'],
+                                 ['es-HN', 'Honduras'],
+                                 ['es-MX', 'México'],
+                                 ['es-NI', 'Nicaragua'],
+                                 ['es-PA', 'Panamá'],
+                                 ['es-PY', 'Paraguay'],
+                                 ['es-PE', 'Perú'],
+                                 ['es-PR', 'Puerto Rico'],
+                                 ['es-DO', 'República Dominicana'],
+                                 ['es-UY', 'Uruguay'],
+                                 ['es-VE', 'Venezuela']],
+             ['Euskara',         ['eu-ES']],
+             ['Filipino',        ['fil-PH']],
+             ['Français',        ['fr-FR']],
+             ['Basa Jawa',       ['jv-ID']],
+             ['Galego',          ['gl-ES']],
+             ['ગુજરાતી',           ['gu-IN']],
+             ['Hrvatski',        ['hr-HR']],
+             ['IsiZulu',         ['zu-ZA']],
+             ['Íslenska',        ['is-IS']],
+             ['Italiano',        ['it-IT', 'Italia'],
+                                 ['it-CH', 'Svizzera']],
+             ['ಕನ್ನಡ',             ['kn-IN']],
+             ['ភាសាខ្មែរ',          ['km-KH']],
+             ['Latviešu',        ['lv-LV']],
+             ['Lietuvių',        ['lt-LT']],
+             ['മലയാളം',          ['ml-IN']],
+             ['मराठी',             ['mr-IN']],
+             ['Magyar',          ['hu-HU']],
+             ['ລາວ',              ['lo-LA']],
+             ['Nederlands',      ['nl-NL']],
+             ['नेपाली भाषा',        ['ne-NP']],
+             ['Norsk bokmål',    ['nb-NO']],
+             ['Polski',          ['pl-PL']],
+             ['Português',       ['pt-BR', 'Brasil'],
+                                 ['pt-PT', 'Portugal']],
+             ['Română',          ['ro-RO']],
+             ['සිංහල',          ['si-LK']],
+             ['Slovenščina',     ['sl-SI']],
+             ['Basa Sunda',      ['su-ID']],
+             ['Slovenčina',      ['sk-SK']],
+             ['Suomi',           ['fi-FI']],
+             ['Svenska',         ['sv-SE']],
+             ['Kiswahili',       ['sw-TZ', 'Tanzania'],
+                                 ['sw-KE', 'Kenya']],
+             ['ქართული',       ['ka-GE']],
+             ['Հայերեն',          ['hy-AM']],
+             ['தமிழ்',            ['ta-IN', 'இந்தியா'],
+                                 ['ta-SG', 'சிங்கப்பூர்'],
+                                 ['ta-LK', 'இலங்கை'],
+                                 ['ta-MY', 'மலேசியா']],
+             ['తెలుగు',           ['te-IN']],
+             ['Tiếng Việt',      ['vi-VN']],
+             ['Türkçe',          ['tr-TR']],
+             ['اُردُو',            ['ur-PK', 'پاکستان'],
+                                 ['ur-IN', 'بھارت']],
+             ['Ελληνικά',         ['el-GR']],
+             ['български',         ['bg-BG']],
+             ['Pусский',          ['ru-RU']],
+             ['Српски',           ['sr-RS']],
+             ['Українська',        ['uk-UA']],
+             ['한국어',            ['ko-KR']],
+             ['中文',             ['cmn-Hans-CN', '普通话 (中国大陆)'],
+                                 ['cmn-Hans-HK', '普通话 (香港)'],
+                                 ['cmn-Hant-TW', '中文 (台灣)'],
+                                 ['yue-Hant-HK', '粵語 (香港)']],
+             ['日本語',           ['ja-JP']],
+             ['हिन्दी',             ['hi-IN']],
+             ['ภาษาไทย',         ['th-TH']]];
+
+            // first select a default language on page load
+            recognizer.lang = "en-US";
+            // now create a list of language to select on page
+            for(var i=0; i<langList.length; i++){
+                // add it in the select tag
+                var countryList = countryList + '<option value="'+i+'">'+langList[i][0]+'</option>';
+            }
+            country.innerHTML = countryList;
+            // some languages are used in more that one country Now specify languages for country
+            country.onchange = function() {
+                var countryVal = country.value;
+                // we have to give the array variable to get data "langList"
+                var selectCount = langList[countryVal];
+                if(selectCount.length <= 2){
+                    var countryLangList = countryLangList + '<option value="'+selectCount[1][0]+'">'+selectCount[0]+'</option>';
+                }else{
+                    for(var j=1; j<selectCount.length; j++){
+                    var countryLangList = countryLangList + '<option value="'+selectCount[j][0]+'">'+selectCount[j][1]+'</option>';
+                    }
+                }
+                countryLang.innerHTML = countryLangList;
+                countryLang.style.display = "inline-block";
+                recognizer.lang = countryLang.value;
+            }
+            // first set the value for lang
+            countryLang.onchange = function() {
+                // it will get the value and assign to the "recognizer.lang" on selecting
+                recognizer.lang = countryLang.value;
+            }
+            // now set controls
+            start.onclick = function() {
+                recognizer.start();
+            }
+            stop.onclick = function() {
+                recognizer.stop();
+            }
+            cancel.onclick = function() {
+                recognizer.abort();
+                confd.innerHTML = "Cancled";
+            }
+            // when the recognizing start
+            recognizer.onstart = function() {
+                confd.innerHTML = "Listing ...";
+            }
+            recognizer.onspeechend = function() {
+                stop.click();
+            }
+            recognizer.onresult = function(event) {
+                var outText = event.results[0][0].transcript;
+                var confidence = event.results[0][0].confidence*100;
+                output.value = outText;
+                confd.innerHTML = "Confidence: " + Math.round(confidence) + "%";
+            }
+
+
+
+
+
+
+
+
+
+
+
+
+        var socket = io.connect('http://' + document.domain + ':' + location.port);
+        var recognitionEnabled = false;
+        var videoPlayer = document.getElementById('videoPlayer');
+        var videoOverlay = document.getElementById('videoOverlay');
+        var overlayVideo = document.getElementById('overlayVideo');
+        var convertedText = document.getElementById('convertedText');
+        var convertedTextAll = document.getElementById('convertedTextAll');
+        var userInputForm = document.getElementById('userInputForm');
+        var overlayTimer;
+        var lastAppendedWord = '';
+
+        function startOverlayTimer() {
+            overlayTimer = setTimeout(function() {
+                if (!videoPlayer.paused && !videoPlayer.ended) {
+                    videoOverlay.style.display = 'none';
+                } else {
+                    videoOverlay.style.display = 'flex';
+                }
+            }, 10000); // 10 seconds
+        }
+
+        function resetOverlayTimer() {
+            clearTimeout(overlayTimer);
+        }
+
+        function updateToggleButton() {
+            var micButton = document.querySelector('.toggleButton img');
+            micButton.src = recognitionEnabled ? '/static/image/mic.svg' : '/static/image/mic-off.svg';
+        }
+\
+
+        function updateVisibility() {
+            convertedText.style.display = recognitionEnabled ? 'block' : 'none';
+            userInputForm.style.display = recognitionEnabled ? 'none' : 'block';
+        }
+
+        function toggleRecognition() {
+            recognitionEnabled = !recognitionEnabled;
+            updateToggleButton();
+            updateVisibility();
+        }
+
+        function pronounceText() {
+            var textToSpeak = convertedTextAll.value;
+            if (textToSpeak.trim() !== '') {
+                var utterance = new SpeechSynthesisUtterance(textToSpeak);
+                speechSynthesis.speak(utterance);
+            }
+        }
+
+        function copyText() {
+            var copyText = document.getElementById("convertedTextAll");
+            copyText.select();
+            copyText.setSelectionRange(0, 99999); /* For mobile devices */
+            document.execCommand("copy");
+
+            var copyButton = document.getElementById("copyButton");
+            copyButton.innerHTML = '<img class="buttonIcon" id="copyButtonIcon" src="/static/image/copied.svg" alt="Copy">';
+
+            setTimeout(function() {
+                copyButton.innerHTML = '<img class="buttonIcon" id="copyButtonIcon" src="/static/image/copy.svg" alt="Copy">';
+            }, 1000); // Reset button text after 1 second
+        }
+
+
+        function showCopyIndicator() {
+            copyButtonIcon.src = '/static/image/check.svg';
+            copyIndicator.style.display = 'flex';
+            setTimeout(function () {
+                copyButtonIcon.src = '/static/image/clone-regular.svg';
+                copyIndicator.style.display = 'none';
+            }, 1000);
+        }
+
+        socket.on('update_text', function (msg) {
+            if (recognitionEnabled) {
+                convertedText.value = msg.text;
+                appendToConvertedTextAll(msg.text);
+            }
+        });
+
+        socket.on('play_video', function (msg) {
+            if (recognitionEnabled) {
+                videoPlayer.src = 'data:video/mp4;base64,' + btoa(String.fromCharCode.apply(null, new Uint8Array(msg.video_data)));
+                videoPlayer.load();
+                resetOverlayTimer();
+                videoPlayer.play();
+            }
+        });
+
+        videoPlayer.addEventListener('pause', function () {
+            resetOverlayTimer();
+            startOverlayTimer();
+        });
+
+        videoPlayer.addEventListener('play', function () {
+            resetOverlayTimer();
+            videoOverlay.style.display = 'none';
+        });
+
+        let lastAppendedText = '';
+
+        function appendToConvertedTextAll(text) {
+            // Trim the incoming text
+            const trimmedText = text.trim();
+
+            // If the trimmed text is the same as the last appended text, skip appending
+            if (trimmedText === lastAppendedText) {
+                return;
+            }
+
+            // Append the text to the textarea
+            if (convertedTextAll.value.trim() === '') {
+                convertedTextAll.value = trimmedText;
+            } else {
+                convertedTextAll.value += ' ' + trimmedText;
+            }
+
+            // Update the last appended text
+            lastAppendedText = trimmedText;
+        }
+
+
+
+
+        function submitUserInput() {
+            if (recognitionEnabled) {
+                return false;
+            }
+
+            var userInput = document.getElementById('userInput').value;
+
+            var xhr = new XMLHttpRequest();
+            xhr.open('POST', '/submit_text', true);
+            xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+            xhr.onreadystatechange = function () {
+                if (xhr.readyState === XMLHttpRequest.DONE) {
+                    if (xhr.status === 200) {
+                        appendToConvertedTextAll(userInput);
+                        playVideoForUserInput(userInput);
+                    } else {
+                        console.error('Failed to submit text:', xhr.status);
+                    }
+                }
+            };
+            xhr.send('userInput=' + encodeURIComponent(userInput));
+
+            return false;
+        }
+
+        function playVideoForUserInput(userInput) {
+            var videoFolder = '/static/mp4';
+            var letters = userInput.toUpperCase().split('');
+
+            playLetterVideos(letters, videoFolder);
+        }
+
+        function playLetterVideos(letters, videoFolder) {
+            letters.reduce((previousPromise, letter) => {
+                return previousPromise.then(() => {
+                    return fetch(videoFolder + '/' + letter + '.mp4')
+                        .then(response => {
+                            if (response.ok) {
+                                return response.blob();
+                            } else {
+                                throw new Error('Video file not found for letter: ' + letter);
+                            }
+                        })
+                        .then(blob => {
+                            var objectURL = URL.createObjectURL(blob);
+                            videoPlayer.src = objectURL;
+                            videoPlayer.load();
+                            resetOverlayTimer();
+                            return new Promise((resolve, reject) => {
+                                videoPlayer.onended = () => resolve();
+                                videoPlayer.onerror = (error) => reject(error);
+                                videoPlayer.play();
+                            });
+                        })
+                        .catch(error => {
+                            console.error('Error loading or playing video for letter:', letter, error);
+                            return Promise.resolve();
+                        });
+                });
+            }, Promise.resolve())
+                .then(() => {
+                    startOverlayTimer();
+                })
+                .catch(error => {
+                    console.error('Error playing letter videos:', error);
+                });
+        }
+
+        startOverlayTimer();
+        updateToggleButton();
+        updateVisibility();
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        var videoFeed = document.getElementById('video_feed');
+        var predictedTextContent = document.getElementById('predicted_text_content');
+        var isCameraOn = true; // Initial state
+        var isSpeechToTextOn = false; // Initial state
+        var selectedVoice = 'Microsoft David Desktop - English (United States)'; // Default voice
+        var isCameraOn = localStorage.getItem('isCameraOn') === 'true';
+
+        function updatePredictedText(text) {
+<!--            const predictedTextContent = document.getElementById('predicted_text_content');-->
+            predictedTextContent.innerText = text;
+        }
+
+        function deleteLastPrediction() {
+            const xhr = new XMLHttpRequest();
+            xhr.open('POST', '/delete_char', true);
+            xhr.setRequestHeader('Content-Type', 'application/json');
+
+            xhr.onload = function () {
+                if (xhr.status === 200) {
+                    const response = JSON.parse(xhr.responseText);
+                    updatePredictedText(response.predicted_text);
+                } else {
+                    console.error('Failed to delete character');
+                }
+            };
+
+            xhr.send(JSON.stringify({}));
+        }
+
+
+        function speakPredictedText() {
+            // Get the predicted text content
+            const predictedText = document.getElementById('predicted_text_content').value;
+
+            // Check if the predicted text is not empty
+            if (predictedText.trim() !== '') {
+                // Create a new SpeechSynthesisUtterance object with the predicted text
+                const utterance = new SpeechSynthesisUtterance(predictedText);
+
+                // Optionally, set the voice for the utterance (if needed)
+                // utterance.voice = getSelectedVoice();
+
+                // Speak the predicted text
+                window.speechSynthesis.speak(utterance);
+            }
+        }
+
+
+
+        function toggleCamera() {
+            isCameraOn = !isCameraOn; // Toggle the camera state
+            localStorage.setItem('isCameraOn', isCameraOn.toString()); // Store the camera state in localStorage
+            const cameraIcon = document.getElementById('toggle_camera_button').querySelector('i.fa-solid');
+            if (isCameraOn) {
+                // Implement logic to turn on the camera
+                videoFeed.src = "{{ url_for('video_feed') }}";
+                cameraIcon.className = 'fa-solid fa-hands'; // Set the camera on icon
+                document.getElementById('toggle_camera_button').classList.remove('camera-off');
+                document.getElementById('toggle_camera_button').classList.add('camera-on');
+            } else {
+                // Implement logic to turn off the camera
+                videoFeed.src = ""; // Set the source to an empty string
+                cameraIcon.className = 'fa-solid fa-camera'; // Set the camera off icon
+                document.getElementById('toggle_camera_button').classList.remove('camera-on');
+                document.getElementById('toggle_camera_button').classList.add('camera-off');
+            }
+        }
+
+
+        function openOverlay() {
+            document.getElementById('overlay').style.display = 'flex';
+        }
+
+        function closeOverlay() {
+            document.getElementById('overlay').style.display = 'none';
+        }
+
+        function toggleSpeechToText() {
+            isSpeechToTextOn = !isSpeechToTextOn; // Toggle the speech-to-text state
+            const startStopButton = document.getElementById('start_stop_button');
+            if (isSpeechToTextOn) {
+                // Start speech-to-text
+                startStopButton.innerText = "Stop Speech-to-Text";
+                startSpeechToText();
+            } else {
+                // Stop speech-to-text
+                startStopButton.innerText = "Start Speech-to-Text";
+            }
+        }
+
+        // Define recognition globally
+        let recognition;
+
+        function toggleSpeechToText() {
+            isSpeechToTextOn = !isSpeechToTextOn; // Toggle the speech-to-text state
+            const startStopButton = document.getElementById('start_stop_button');
+            if (isSpeechToTextOn) {
+                // Start speech-to-text
+                startStopButton.innerText = "Stop Speech-to-Text";
+                startSpeechToText();
+            } else {
+                // Stop speech-to-text
+                startStopButton.innerText = "Start Speech-to-Text";
+                stopSpeechToText();
+            }
+        }
+
+        function startSpeechToText() {
+            recognition = new webkitSpeechRecognition();
+            recognition.continuous = true;
+
+            recognition.onresult = function (event) {
+                const speechInput = document.getElementById('speech_input');
+                speechInput.value = event.results[event.results.length - 1][0].transcript;
+            };
+
+            recognition.onend = function () {
+                // Continue recognition if the button is still on
+                if (isSpeechToTextOn) {
+                    startSpeechToText();
+                }
+            };
+
+            // Start the recognition
+            recognition.start();
+        }
+
+        function stopSpeechToText() {
+            if (recognition) {
+                // Stop the recognition
+                recognition.stop();
+            }
+        }
+
+
+        function openSecondOverlay() {
+            document.getElementById('overlay2').style.display = 'flex';
+        }
+
+        function closeSecondOverlay() {
+            document.getElementById('overlay2').style.display = 'none';
+        }
+
+
+        function copyPredictedText() {
+            // Get the predicted text content
+            const predictedText = document.getElementById('predicted_text_content').innerText;
+
+            // Create a range and select the text content
+            const range = document.createRange();
+            range.selectNodeContents(document.getElementById('predicted_text_content'));
+            window.getSelection().removeAllRanges();
+            window.getSelection().addRange(range);
+
+            try {
+                // Execute the copy command
+                const success = document.execCommand('copy');
+
+                if (success) {
+                    // Show the "Copied" indicator inside the button
+                    const copyButton = document.getElementById('copy_button');
+                    copyButton.innerHTML = '<i class="fa-solid fa-file-circle-check" style="color: #0478FD; font-size: 16px;"></i>';
+
+
+                    // Reset the button text after a short delay
+                    setTimeout(() => {
+                        copyButton.innerHTML = '<i class="fa-regular fa-paste fa-xl" style="color: #0478FD;"></i>';
+                    }, 1000); // Adjust the delay as needed
+                } else {
+                    console.error('Failed to copy text: execCommand returned false.');
+                    // Optionally, provide feedback to the user via an alert
+                    alert('Failed to copy text. Please try again.');
+                }
+            } catch (err) {
+                console.error('Failed to copy text:', err);
+                // Optionally, provide feedback to the user via an alert
+                alert('Failed to copy text. Please try again.');
+            }
+
+            // Deselect the text
+            window.getSelection().removeAllRanges();
+        }
+
+
+
+
+
+        // Your existing JavaScript functions
+        var isFrontCamera = false; // Initial state
+
+        function switchCameraBasedOnDevice() {
+            // Check if the device is a computer or cellphone
+            const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+
+            if (isMobile) {
+                // Device is a cellphone
+                switchCamera();
+            } else {
+                // Device is a computer, enumerate all cameras
+                if (navigator.mediaDevices && navigator.mediaDevices.enumerateDevices) {
+                    navigator.mediaDevices.enumerateDevices()
+                        .then(devices => {
+                            // Filter video input devices
+                            const videoDevices = devices.filter(device => device.kind === 'videoinput');
+
+                            if (videoDevices.length > 0) {
+                                // Switch between available cameras on the computer
+                                const nextCameraIndex = (videoDevices.findIndex(device => device.deviceId === videoFeed.srcObject.getVideoTracks()[0].deviceId) + 1) % videoDevices.length;
+                                const nextCamera = videoDevices[nextCameraIndex];
+
+                                videoFeed.srcObject.getVideoTracks()[0].stop(); // Stop the current camera
+
+                                // Start the next camera
+                                navigator.mediaDevices.getUserMedia({
+                                    video: { deviceId: { exact: nextCamera.deviceId } }
+                                }).then(stream => {
+                                    videoFeed.srcObject = stream;
+                                }).catch(error => {
+                                    console.error('Error switching camera:', error);
+                                });
+                            } else {
+                                // No video input devices found
+                                alert("No video input devices found on this computer.");
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Error enumerating devices:', error);
+                        });
+                } else {
+                    // Media devices API not supported
+                    alert("Media devices API not supported on this computer.");
+                }
+            }
+        }
+
+        window.addEventListener('unload', function (event) {
+            // Send a request to the Flask server to release the camera using navigator.sendBeacon
+            const data = JSON.stringify({}); // You can send any data if needed
+            navigator.sendBeacon('/release_camera', data);
+        });
+
+        // Check the camera state on page load
+        window.addEventListener('load', function (event) {
+            if (isCameraOn) {
+                // If the camera was on, turn it on
+                toggleCamera();
+            }
+        });
+
+        setInterval(function () {
+            fetch('/get_predicted_text')
+                .then(response => response.json())
+                .then(data => {
+                    updatePredictedText(data.predicted_text);
+                });
+        }, 1000);
+
+    </script>
+</body>
+</html>

@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Speech to Sign</title>
+
+    <style>
+      body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            transition: background-color 0.3s ease; /* Add a smooth transition for background color */
+
+        }
+
+        h1, #container, #toggleButtonContainer {
+            margin-bottom: 20px;
+        }
+
+        #container {
+            display: flex;
+            flex-wrap: wrap;
+            width: 100%;
+            height:auto%;
+            max-width: 999px;
+        }
+
+        #videoColumn, #textColumn {
+            flex: 2;
+            margin-right: 20px;
+            margin:10px;
+            padding:10px;
+        }
+
+        #videoColumn {
+            margin-bottom:5px;
+            position: relative;
+        }
+
+        #videoPlayer {
+            width: 100%;
+            height:100%;
+            border-radius: 20px;
+        }
+
+        #overlayVideo {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+
+
+            #textContainer {
+                display: flex;
+                flex-direction: column;
+                align-items: stretch;
+                width: 100%;
+                position: relative;
+                transform: translate(-50%, -50%);
+                left: 45%;
+                top: 50%;
+                border-radius: 0.5em;
+                padding: 2em;
+                transition: transform 0.3s ease, opacity 0.3s ease; /* Add smooth transitions for transform and opacity */
+            }
+
+            #convertedText,
+            #convertedTextAll,
+            #userInputForm {
+                width: 100%;
+                margin-bottom: 10px;
+            }
+
+
+            button[type="submit"] {
+                position: relative;
+                bottom: 0;
+                right: 0;
+                background-color: #0478FD;
+                color: white;
+                padding: 10px;
+                border: none;
+                border-radius: 10px;
+                margin-top:10px;
+                cursor: pointer;
+                display: block;
+                transition: background-color 0.3s ease, transform 0.3s ease; /* Add smooth transitions for background color and transform */
+            }
+
+            button[type="submit"]:hover {
+                background-color: #45a049;
+                transform: scale(1.1); /* Example: Increase size on hover */
+            }
+
+            input[type="text"] {
+                width: 100%; /* Take up the full width of the container */
+                padding: 10px; /* Add padding for better appearance */
+                border: 1px solid #ccc; /* Add a border */
+                border-radius: 5px; /* Rounded corners */
+                box-sizing: border-box; /* Include padding and border in the element's total width */
+            }
+
+            input[type="text"]:focus {
+                border-color: #4CAF50;
+            }
+
+            label[for="convertedTextAll"] {
+                display: block; /* Make the label a block element */
+                margin-bottom: 8px;
+                padding:2px;
+            }
+
+            .textarea#convertedTextAll {
+                width: 100%; /* Take up the full width of the container */
+                padding: 10px; /* Add padding for better appearance */
+                border: 1px solid #ccc; /* Add a border */
+                border-radius: 5px; /* Rounded corners */
+                box-sizing: border-box;
+                margin:0px 0px 10px;
+            }
+
+            .textarea {
+              font-size: 1em;
+              width: 100%;
+              border-radius: 0.5em;
+              padding: 1em;
+              resize: none;
+              border: 0.12em solid #040454;
+            }
+            .textarea#convertedTextAll:focus {
+                border-color: #4CAF50;
+            }
+
+
+        #toggleButtonContainer, #pronounceButtonContainer, #copyButtonContainer, #copyIndicator {
+            display: flex;
+            align-items: center;
+            margin:10px;
+        }
+
+        .toggleButton, .pronounceButton, .copyButton, #copyIndicator {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: none;
+            cursor: pointer;
+            padding: 10px;
+            margin: 10px;
+            border-radius: 50%;
+            transition: background-color 0.3s ease; /* Add smooth transitions for background color */
+        }
+
+        .buttonIcon, #checkIcon {
+            width: 20px;
+            height: 20px;
+        }
+
+        #toggleButton {
+            margin-right: 10px;
+        }
+
+        @media screen and (max-width: 600px) {
+            #container {
+                flex-direction: column;
+                align-items: stretch;
+
+            }
+
+            #videoColumn, #textColumn {
+                flex: auto;
+                margin-right: 0;
+                margin:30px;
+                padding:2px;
+
+            }
+
+
+        }
+    </style>
+</head>
+<body>
+    <h1>Speech to Sign</h1>
+
+    <div id="container">
+        <div id="videoColumn">
+            <video id="videoPlayer" autoplay muted>
+                Your browser does not support the video tag.
+            </video>
+
+            <div id="videoOverlay">
+                <video id="overlayVideo" autoplay muted loop>
+                    <source src="/static/mp4/overlay.mp4" type="video/mp4">
+                    Your browser does not support the video tag.
+                </video>
+            </div>
+        </div>
+
+        <div id="textColumn">
+            <div id="textContainer">
+                <label for="convertedText">SPEAKiT</label>
+                <input type="text" id="convertedText" placeholder="SpeakiT Internet" readonly>
+
+                <label for="convertedTextAll">You've said</label>
+                <textarea id="convertedTextAll" readonly rows="4" class="textarea" placeholder="Nice to meet you..."></textarea>
+
+                <form id="userInputForm" onsubmit="return submitUserInput();" class="flex-container">
+                    <label for="userInput">WRITEiT:</label>
+                    <input type="text" id="userInput" name="userInput" placeholder="Hello" required>
+                    <button type="submit">SUBMiT</button>
+                </form>
+            </div>
+        </div>
+
+    </div>
+
+    <div id="toggleButtonContainer">
+        <button class="toggleButton" onclick="toggleRecognition()">
+            <img class="buttonIcon" src="/static/image/mic.svg" alt="Microphone On">
+        </button>
+
+        <div id="pronounceButtonContainer">
+            <button class="pronounceButton" onclick="pronounceText()">
+                <img class="buttonIcon" src="/static/image/volume-high-solid (1).svg" alt="Pronounce">
+            </button>
+        </div>
+
+        <div id="copyButtonContainer">
+            <button class="copyButton" onclick="copyText()">
+                <img class="buttonIcon" id="copyButtonIcon" src="/static/image/clone-regular.svg" alt="Copy">
+            </button>
+            <div id="copyIndicator" style="display: none;">
+                <img class="checkIcon" src="/static/image/check.svg" alt="Check">
+            </div>
+        </div>
+
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
+<script>
+    var socket = io.connect('http://' + document.domain + ':' + location.port);
+    var recognitionEnabled = false;
+    var videoPlayer = document.getElementById('videoPlayer');
+    var videoOverlay = document.getElementById('videoOverlay');
+    var overlayVideo = document.getElementById('overlayVideo');
+    var convertedText = document.getElementById('convertedText');
+    var convertedTextAll = document.getElementById('convertedTextAll');
+    var userInputForm = document.getElementById('userInputForm');
+    var overlayTimer;
+    var lastAppendedWord = '';
+
+    function startOverlayTimer() {
+        overlayTimer = setTimeout(function() {
+            if (!videoPlayer.paused && !videoPlayer.ended) {
+                videoOverlay.style.display = 'none';
+            } else {
+                videoOverlay.style.display = 'flex';
+            }
+        }, 10000); // 10 seconds
+    }
+
+    function resetOverlayTimer() {
+        clearTimeout(overlayTimer);
+    }
+
+    function updateToggleButton() {
+        var micButton = document.querySelector('.toggleButton img');
+        micButton.src = recognitionEnabled ? '/static/image/mic.svg' : '/static/image/mic-off.svg';
+    }
+
+    function updateVisibility() {
+        convertedText.style.display = recognitionEnabled ? 'block' : 'none';
+        userInputForm.style.display = recognitionEnabled ? 'none' : 'block';
+    }
+
+    function toggleRecognition() {
+        recognitionEnabled = !recognitionEnabled;
+        updateToggleButton();
+        updateVisibility();
+    }
+
+    function pronounceText() {
+        var textToSpeak = convertedTextAll.value;
+        if (textToSpeak.trim() !== '') {
+            var utterance = new SpeechSynthesisUtterance(textToSpeak);
+            speechSynthesis.speak(utterance);
+        }
+    }
+
+    function copyText() {
+        convertedTextAll.select();
+        document.execCommand('copy');
+        showCopyIndicator();
+    }
+
+    function showCopyIndicator() {
+        copyButtonIcon.src = '/static/image/check.svg';
+        copyIndicator.style.display = 'flex';
+        setTimeout(function () {
+            copyButtonIcon.src = '/static/image/clone-regular.svg';
+            copyIndicator.style.display = 'none';
+        }, 1000);
+    }
+
+    socket.on('update_text', function (msg) {
+        if (recognitionEnabled) {
+            convertedText.value = msg.text;
+            appendToConvertedTextAll(msg.text);
+        }
+    });
+
+    socket.on('play_video', function (msg) {
+        if (recognitionEnabled) {
+            videoPlayer.src = 'data:video/mp4;base64,' + btoa(String.fromCharCode.apply(null, new Uint8Array(msg.video_data)));
+            videoPlayer.load();
+            resetOverlayTimer();
+            videoPlayer.play();
+        }
+    });
+
+    videoPlayer.addEventListener('pause', function () {
+        resetOverlayTimer();
+        startOverlayTimer();
+    });
+
+    videoPlayer.addEventListener('play', function () {
+        resetOverlayTimer();
+        videoOverlay.style.display = 'none';
+    });
+
+    let lastAppendedText = '';
+
+function appendToConvertedTextAll(text) {
+    // Trim the incoming text
+    const trimmedText = text.trim();
+
+    // If the trimmed text is the same as the last appended text, skip appending
+    if (trimmedText === lastAppendedText) {
+        return;
+    }
+
+    // Append the text to the textarea
+    if (convertedTextAll.value.trim() === '') {
+        convertedTextAll.value = trimmedText;
+    } else {
+        convertedTextAll.value += ' ' + trimmedText;
+    }
+
+    // Update the last appended text
+    lastAppendedText = trimmedText;
+}
+
+
+
+
+    function submitUserInput() {
+        if (recognitionEnabled) {
+            return false;
+        }
+
+        var userInput = document.getElementById('userInput').value;
+
+        var xhr = new XMLHttpRequest();
+        xhr.open('POST', '/submit_text', true);
+        xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+        xhr.onreadystatechange = function () {
+            if (xhr.readyState === XMLHttpRequest.DONE) {
+                if (xhr.status === 200) {
+                    appendToConvertedTextAll(userInput);
+                    playVideoForUserInput(userInput);
+                } else {
+                    console.error('Failed to submit text:', xhr.status);
+                }
+            }
+        };
+        xhr.send('userInput=' + encodeURIComponent(userInput));
+
+        return false;
+    }
+
+    function playVideoForUserInput(userInput) {
+        var videoFolder = '/static/mp4';
+        var letters = userInput.toUpperCase().split('');
+
+        playLetterVideos(letters, videoFolder);
+    }
+
+    function playLetterVideos(letters, videoFolder) {
+        letters.reduce((previousPromise, letter) => {
+            return previousPromise.then(() => {
+                return fetch(videoFolder + '/' + letter + '.mp4')
+                    .then(response => {
+                        if (response.ok) {
+                            return response.blob();
+                        } else {
+                            throw new Error('Video file not found for letter: ' + letter);
+                        }
+                    })
+                    .then(blob => {
+                        var objectURL = URL.createObjectURL(blob);
+                        videoPlayer.src = objectURL;
+                        videoPlayer.load();
+                        resetOverlayTimer();
+                        return new Promise((resolve, reject) => {
+                            videoPlayer.onended = () => resolve();
+                            videoPlayer.onerror = (error) => reject(error);
+                            videoPlayer.play();
+                        });
+                    })
+                    .catch(error => {
+                        console.error('Error loading or playing video for letter:', letter, error);
+                        return Promise.resolve();
+                    });
+            });
+        }, Promise.resolve())
+            .then(() => {
+                startOverlayTimer();
+            })
+            .catch(error => {
+                console.error('Error playing letter videos:', error);
+            });
+    }
+
+    startOverlayTimer();
+    updateToggleButton();
+    updateVisibility();
+</script>
+
+
+</body>
+</html>

@@ -1,0 +1,571 @@
+body {
+        position: relative; /* Set body position to relative */
+        min-height: 100vh; /* Set body minimum height to full viewport height */
+        margin: 0; /* Remove default margin */
+        padding: 0; /* Remove default padding */
+        font-family: 'Montserrat', sans-serif;
+    }
+
+    /* Apply Montserrat font to placeholder text */
+    ::-webkit-input-placeholder {
+        /* Webkit (Safari, Chrome) */
+        font-family: 'Montserrat', sans-serif;
+    }
+
+
+    .container {
+        display: flex;
+        flex-direction: row; /* Default: Display items in a row */
+        flex-wrap: wrap; /* Allow flex items to wrap to the next line */
+        justify-content: center; /* Center items horizontally */
+    }
+
+    .column1, .column2 {
+        flex: 1;
+        border: 1px solid #ccc;
+        border-radius: 10px;
+        box-sizing: border-box; /* Include padding and border in the element's total width and height */
+        margin: 10px; /* Add margin to create space between columns */
+        height: 100% auto;
+    }
+
+    .column2 {
+        padding: 20px;
+    }
+
+    #predicted_text_container {
+        position: relative;
+    }
+
+    textarea {
+        width: 90%; /* Set textarea width to 100% of its container */
+        height: 100px; /* Adjust height as needed */
+        border-radius: 10px;
+        border: none;
+        resize: none;
+        font-family: 'Montserrat', sans-serif;
+        box-sizing: border-box; /* Include padding and border in the element's total width and height */
+    }
+
+    #btn {
+        position: absolute;
+        bottom: 5px;
+        right: 5px;
+    }
+
+    button {
+        margin-left: 5px; /* Add some space between buttons */
+    }
+
+    #video_feed {
+        width: 100%; /* Set video_feed width to 100% of its container */
+        height: auto; /* Allow video_feed height to adjust based on content */
+        border: 1px solid black; /* Add a 1px solid black border */
+        border-radius: 10px;
+    }
+
+    #button_container {
+        display: flex;
+        justify-content: center;
+        position: fixed;
+        bottom: 7px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 45%;
+        height: auto;
+        border-radius: 30px;
+        border-top: 1px solid #ccc; /* Top border */
+        border-bottom: 1px solid #ccc; /* Bottom border */
+        border-left: 0 solid #ccc; /* Left border */
+        border-right: 0; /* No right border */
+
+    }
+
+    .overlay {
+        display: none;
+    }
+
+    .overlay.active {
+        display: flex;
+    }
+
+
+    .icon-button {
+        background: none;
+        border: none;
+        cursor: pointer;
+        height: 50px;
+        padding: 10px auto;
+        margin: 15px; /* Add margin between buttons */
+        font-family: 'Montserrat', sans-serif;
+    }
+
+    #nav_container {
+        display: flex;
+        padding-top: 20px;
+        justify-content: center; /* Center items horizontally */
+    }
+
+    /* First Overlay ----------------------------------------------------------------------------*/
+    #modal {
+        background-color: white; /* Add the desired background color */
+        padding: 5px;
+        width: 40%;
+        border-radius: 10px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+        position: relative;
+        text-align: center;
+        align-items: center;
+        justify-content: center;
+        font-family: 'Montserrat', sans-serif;
+    }
+
+    .close-button {
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        border-radius: 1px solid #11111;
+        cursor: pointer;
+        font-size: 24px;
+    }
+
+    .bar {
+        position: absolute;
+        transform: translate(-50%,-50%);
+        top : -10px;
+        background-color: #f98866;
+        width: 20px;
+        height: 20px;
+        margin: 5px 0 1px;
+        border-radius: 10px;
+        transition: 0.3s;
+        animation: dope 1.5s ease-in-out 0s infinite;
+        text-align: center;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .bar:nth-child(1){
+        animation-delay: 0s;
+    }
+
+    .bar:nth-child(2){
+        animation-delay: 0.15s;
+    }
+    .bar:nth-child(3){
+        animation-delay: 0.3s;
+    }
+    .bar:nth-child(4){
+        animation-delay: 0.45s;
+    }
+
+
+    @keyframes dope {
+        0%   {
+            height: 20px;
+        }
+        50%  {
+            height:60px;
+        }
+        100% {
+            height: 20px;
+        }
+    }
+
+    /* Style for the overlay */
+     #overlay {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        align-items: center;
+        justify-content: center;
+        z-index: 2;
+    }
+
+    #country, #countryLang, #start, #stop, #cancel {
+      /* Add your styles for the select elements here */
+      width: 100% auto;
+      padding: 1%;
+      border-radius: 5px;
+      margin-top: 10px;
+    }
+
+    .g_output {
+      /* Add your styles for the select elements here */
+      width: 100%;
+      padding: 10px;
+      border-radius:5px;
+      justify-content: center;
+      text-align: center;
+      align-items: center;
+      font-family: 'Montserrat', sans-serif;
+    }
+
+    .icon {
+        position: relative;
+        text-align: center;
+        cursor: pointer;
+        text-align: center;
+        display: flex;
+        justify-content: center;
+        align-items: center; /* Center the icon vertically */
+        width: 100%; /* Set width to 100% */
+        margin-top: 70px;
+        margin-bottom: 50px;
+    }
+
+    /* Style for the close button in the modal */
+    #start_stop_button {
+        background-color: #3498db; /* Button background color */
+        color: white;
+        padding: 10px 20px;
+        border: none;
+        border-radius: 25px;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+    }
+
+    #start_stop_button:hover {
+        background-color: #2980b9; /* Change background color on hover */
+    }
+
+    /* Second Overlay---------------------------------------------------------------*/
+        #container {
+            margin-bottom: 20px;
+        }
+
+        h1 {
+            text-align: center;
+            color: #0478fd;
+        }
+
+        #container {
+            display: flex;
+            flex-wrap: wrap;
+            width: 100%;
+            height:auto%;
+            max-width: 999px;
+        }
+
+        #videoColumn, #textColumn {
+            flex: 2;
+            margin-right: 20px;
+            margin:10px;
+            padding:10px;
+        }
+
+        #videoColumn {
+            margin-bottom:5px;
+            position: relative;
+        }
+
+        #videoPlayer {
+            width: 100%;
+            height:100%;
+            border-radius: 20px;
+        }
+
+        #overlayVideo {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+
+
+        #textContainer {
+            display: flex;
+            flex-direction: column;
+            align-items: stretch;
+            width: 100%;
+            position: relative;
+            transform: translate(-50%, -50%);
+            left: 45%;
+            top: 50%;
+            border-radius: 0.5em;
+            padding: 2em;
+            font-family: 'Montserrat', sans-serif;
+            transition: transform 0.3s ease, opacity 0.3s ease; /* Add smooth transitions for transform and opacity */
+        }
+
+        #convertedText,
+        #convertedTextAll,
+        #userInputForm {
+            width: 100%;
+            margin-bottom: 10px;
+            font-family: 'Montserrat', sans-serif;
+        }
+
+
+        button[type="submit"] {
+            position: relative;
+            bottom: 0;
+            right: 0;
+            background-color: #0478FD;
+            color: white;
+            padding: 10px;
+            margin-left: .1px;
+            border: none;
+            border-radius: 10px;
+            margin-top:10px;
+            cursor: pointer;
+            display: block;
+            font-family: 'Montserrat', sans-serif;
+            transition: background-color 0.3s ease, transform 0.3s ease; /* Add smooth transitions for background color and transform */
+        }
+
+        button[type="submit"]:hover {
+            background-color: #45a049;
+            transform: scale(1.1); /* Example: Increase size on hover */
+            font-family: 'Montserrat', sans-serif;
+        }
+
+        input[type="text"] {
+            width: 100%; /* Take up the full width of the container */
+            padding: 15px; /* Add padding for better appearance */
+            border: 1px solid #ccc; /* Add a border */
+            border-radius: 5px; /* Rounded corners */
+            box-sizing: border-box; /* Include padding and border in the element's total width */
+        }
+
+
+        input[type="text"]:focus {
+            border-color: #4CAF50;
+            font-family: 'Montserrat', sans-serif;
+        }
+
+        label[for="convertedTextAll"] {
+            display: block; /* Make the label a block element */
+            margin-bottom: 8px;
+            padding:2px;
+            font-family: 'Montserrat', sans-serif;
+        }
+
+        .textarea#convertedTextAll {
+            width: 100%; /* Take up the full width of the container */
+            padding: 10px; /* Add padding for better appearance */
+            border: 1px solid #ccc; /* Add a border */
+            border-radius: 5px; /* Rounded corners */
+            box-sizing: border-box;
+            margin:0px 0px 10px;
+            font-family: 'Montserrat', sans-serif;
+        }
+
+        .textarea {
+          font-size: 1em;
+          width: 100%;
+          border-radius: 0.5em;
+          padding: 1em;
+          resize: none;
+          border: 0.12em solid #040454;
+        }
+        .textarea#convertedTextAll:focus {
+            border-color: #4CAF50;
+        }
+
+        #toggleButtonContainer {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+
+
+        #pronounceButtonContainer, #copyButtonContainer, #copyIndicator, #toggleButton {
+            display: flex;
+            align-items: center;
+            margin:10px;
+        }
+
+        .toggleButton, .pronounceButton, .copyButton, .delete_button, #copyIndicator {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: none;
+            cursor: pointer;
+            padding: 10px;
+            margin: 15px;
+            border-radius: 50%;
+
+            background-color: #0478fd;
+            transition: background-color 0.3s ease; /* Add smooth transitions for background color */
+        }
+
+        .buttonIcon, #checkIcon {
+            width: 20px;
+            height: 20px;
+        }
+
+        /* Style for the second overlay */
+        #overlay2 {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height:100%;
+            background: rgba(0, 0, 0, 0.5);
+            /* Semi-transparent black background */
+            align-items: center;
+            justify-content: center;
+            z-index: 2;
+        }
+
+        /* Style for the second modal */
+         #modal2 {
+            background-color: #fff;
+            padding: 30px;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+            position: fixed;
+        }
+
+
+        /* Style for the close button in the second modal */
+        .close-button2 {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            cursor: pointer;
+            padding-right: 10px;
+            padding-top: 10px;
+            font-size: 24px;
+        }
+
+        /* Media query for screens smaller than 600px */
+        @media screen and (max-width: 768px) {
+            .container {
+                flex-direction: column; /* Change flex direction to display items in a column on smaller screens */
+            }
+
+            textarea {
+                width: 80%; /* Set textarea width to 100% of its container */
+                height: 50px; /* Adjust height as needed */
+                resize: none;
+                border: none;
+                box-sizing: border-box; /* Include padding and border in the element's total width and height */
+            }
+
+            #button_container {
+                position: fixed;
+                bottom: 7px; /* Adjust the distance from the bottom */
+                left: 50%; /* Center horizontally */
+                transform: translateX(-50%); /* Adjust position to center horizontally */
+                display: flex;
+                justify-content: center; /* Center items horizontally */
+                width: 95%; /* Set container width */
+                height: auto; /* Adjust height as needed */
+                border-radius: 10px;
+                border: 1px solid #ccc;
+                background: white;
+            }
+
+            #video_feed {
+                width: 100%; /* Set video_feed width to 100% of its container */
+                height: 450px; /* Allow video_feed height to adjust based on content */
+                border: 1px solid black; /* Add a 1px solid black border */
+                border-radius: 10px;
+            }
+
+            #modal {
+                background-color: white; /* Add the desired background color */
+                padding: 20px;
+                width: 80%;
+                border-radius: 10px;
+                box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+                position: relative;
+                text-align: center;
+                align-items: center;
+                justify-content: center;
+
+            }
+
+            #country, #countryLang, #start, #stop, #cancel {
+              /* Add your styles for the select elements here */
+              width: 60px;
+              padding: 4px;
+              margin-bottom: 3px;
+              border-radius:5px;
+            }
+
+                        #container {
+                    flex-direction: column;
+                    align-items: stretch;
+
+                }
+
+                #videoColumn, #textColumn {
+                    flex: auto;
+                    margin-right: 0;
+                    margin:30px;
+                    padding:2px;
+
+                }
+
+                /* Style for the second overlay */
+            #overlay2 {
+                display: none;
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height:100%;
+                background: rgba(0, 0, 0, 0.5);
+                /* Semi-transparent black background */
+                align-items: center;
+                justify-content: center;
+                z-index: 2;
+            }
+
+            /* Style for the second modal */
+             #modal2 {
+                background-color: #fff;
+                margin-top: .10%;
+                border-radius: 5px;
+                box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+                position: fixed;
+            }
+
+            input[type="text"] {
+                    width: 100%; /* Take up the full width of the container */
+                    padding: 25px; /* Add padding for better appearance */
+                    border: 1px solid #ccc; /* Add a border */
+                    border-radius: 5px; /* Rounded corners */
+                    box-sizing: border-box; /* Include padding and border in the element's total width */
+                }
+
+            #convertedText,
+                #convertedTextAll,
+                #userInputForm {
+                    width: 100%;
+                    height: 60px;
+                    margin-bottom: 10px;
+                }
+
+            .toggleButton, .pronounceButton, .copyButton, .delete_button, #copyIndicator {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                border: none;
+                cursor: pointer;
+                padding: 17px;
+                margin: 10px;
+                border-radius: 50%;
+
+                background-color: #0478fd;
+                transition: background-color 0.3s ease; /* Add smooth transitions for background color */
+            }
+
+            #predicted_text_container, .delete_button {
+                position: relative;
+                padding: 10px;
+        }
+    }

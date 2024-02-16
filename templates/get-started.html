@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>Get Started</title>
+  <meta name="title" content="Get Started">
+
+
+  <link rel="shortcut icon" href="/static/img/new-logo.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://unpkg.com/a11y-slider@latest/dist/a11y-slider.css" />
+  <script src="https://unpkg.com/a11y-slider@latest/dist/a11y-slider.js" defer></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" 
+  integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" 
+  crossorigin="anonymous" referrerpolicy="no-referrer" />
+  <link rel="stylesheet" href="/static/css/get-started.css">
+
+</head>
+
+<body>
+  <main>
+    <article>
+      <header>
+        <div class="header container flex-row ">
+          <div class="header_logo">
+            <a href="index.html"><img src="/static/img/SPEAKIT_LOGO.svg" width="175" alt=" logo"/></a>
+          </div>
+        </div>
+      </header>
+
+      <!-- Hero -->
+
+      <section class="section hero  has-bg-image" aria-label="home">
+        <div class="hero-area">
+          <div class="hero-shape shape1"></div>
+          <div class="hero-shape shape2"></div>
+          <div class="hero-shape shape3"></div>
+          <div class="hero-shape shape4"></div>
+          <div class="hero-shape shape5"></div>
+          <div class="hero-shape shape6"></div>
+          <div class="hero-shape shape7"></div>
+          <div class="hero-shape shape8"></div>
+          <div class="hero-shape shape9"></div>
+          <div class="hero-shape shape10"></div>
+          <div class="container">
+            <div class="hero-content">
+              <h1 class="h1 hero-title">LET YOUR HANDS <span class="color" > MAKE A SOUNDS! </span></h1>
+              <p class="hero-text">
+                A Communication Tool to Breakthrough the Language Barrier for Deaf-Mute Community
+              </p>
+              <div class="btn-wrapper">
+                <a href="/asl_to_text" class="btn btn-primary">Start ASL-to-Text App
+                  <i class="fa-solid fa-hands"></i>
+                </a>
+              </div>
+            </div>
+
+            <div class="slide-container">
+              <div class="slide">
+                <img src="/static/img/communicate.svg" alt="Slide 1">
+                <h2>Communicate  quickly and effectively</h2>
+                <p>Your pocket translator available whenever  you need it</p>
+              </div>
+              <div class="slide">
+                <img src="/static/img/exchanging messages.svg" alt="Slide 2">
+                <h2>CoMute is a powerful tool</h2>
+                <p> Use the app as resources in the  classroom,with your family and friends.</p>
+              </div>
+              <div class="slide">
+                <img src="/static/img/texting.svg" alt="Slide 3">
+                <h2>Make friends with CoMute</h2>
+                <p>80% of deaf people communicate only in Sign Languages. Open doors to millions of people starting with ASL or FSL (Filipino Sign Language).</p>
+              </div>
+              <button class="navigation-button prev-button" onclick="showSlide(currentSlide - 1)"><i class="fa-solid fa-chevron-left"></i></button>
+              <button class="navigation-button next-button" onclick="showSlide(currentSlide + 1)"><i class="fa-solid fa-chevron-right"></i></button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <div class=" section copyright-wrapper">
+        <p>Design and Developed by  KoDous</p>
+      </div>
+    </article>
+  </main>
+
+  <script src="/static/js/script.js"></script>
+  <script>
+    const slides = document.querySelectorAll('.slide');
+    let currentSlide = 0;
+
+    function showSlide(n) {
+      slides[currentSlide].classList.remove('active');
+      currentSlide = (n + slides.length) % slides.length;
+      slides[currentSlide].classList.add('active');
+    }
+
+    showSlide(0);
+
+    const sliders = document.querySelectorAll("[data-slider]");
+
+    const initSlider = function (currentSlider) {
+      const sliderContainer = currentSlider.querySelector("[data-slider-container]");
+      const sliderPrevBtn = currentSlider.querySelector("[data-slider-prev]");
+      const sliderNextBtn = currentSlider.querySelector("[data-slider-next]");
+      const textContainer = currentSlider.querySelector('.text-details');
+      const sliderItems = currentSlider.querySelectorAll('.slider-item');
+
+      let currentSlidePos = 0;
+
+      const moveSliderItem = function () {
+        const currentSlide = sliderItems[currentSlidePos];
+        const offsetX = currentSlide.offsetLeft;
+
+        sliderContainer.style.transition = 'none';
+        sliderContainer.style.left = `-${offsetX}px`;
+
+        updateText();
+      };
+
+      const slideNext = function () {
+        currentSlidePos = (currentSlidePos + 1) % sliderItems.length;
+        moveSliderItem();
+        showSlide(currentSlidePos); // Show corresponding slide
+      };
+
+      sliderNextBtn.addEventListener("click", slideNext);
+
+      const slidePrev = function () {
+        if (currentSlidePos <= 0) {
+          currentSlidePos = sliderItems.length - 1;
+        } else {
+          currentSlidePos--;
+        }
+
+        moveSliderItem();
+        showSlide(currentSlidePos); // Show corresponding slide
+      };
+
+      sliderPrevBtn.addEventListener("click", slidePrev);
+
+      sliderItems.forEach((item, index) => {
+        item.addEventListener("click", function () {
+          currentSlidePos = index;
+          moveSliderItem();
+          showSlide(currentSlidePos); // Show corresponding slide
+        });
+      });
+
+      const dontHaveExtraItem = sliderItems.length <= 1;
+      if (dontHaveExtraItem) {
+        sliderNextBtn.style.display = "none";
+        sliderPrevBtn.style.display = "none";
+      }
+
+      // Update text function
+      const updateText = function () {
+        const currentSlide = sliderItems[currentSlidePos];
+        const sliderText = currentSlide.querySelector('.slider-item-text');
+
+        // Hide all text elements
+        sliderItems.forEach(item => {
+          item.querySelector('.slider-item-text').classList.add('hidden');
+        });
+
+        // Show the text of the current slide
+        sliderText.classList.remove('hidden');
+
+        // Update text elements
+        const h2 = sliderText.querySelector('h2').innerText;
+        const p = sliderText.querySelector('p').innerText;
+
+        textContainer.querySelector('h2').innerText = h2;
+        textContainer.querySelector('p').innerText = p;
+      };
+
+      // Initial update
+      updateText();
+    };
+
+    // Initialize both sliders and slides
+    for (let i = 0, len = sliders.length; i < len; i++) {
+      initSlider(sliders[i]);
+    }
+  </script>
+  <script type="module" src="https://unpkg.com/ionicons@5.5.2/dist/ionicons/ionicons.esm.js"></script>
+  <script nomodule src="https://unpkg.com/ionicons@5.5.2/dist/ionicons/ionicons.js"></script>
+
+</body>
+
+</html>
