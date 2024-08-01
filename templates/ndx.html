@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Camera App</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #f0f0f0;
+        }
+        .container {
+            text-align: center;
+        }
+        img {
+            width: 100%;
+            max-width: 600px;
+            border: 2px solid #333;
+            border-radius: 8px;
+        }
+        textarea {
+            width: 100%;
+            max-width: 590px;
+            height: 70px;
+            margin: 20px 0;
+            padding: 10px;
+            border: 1px solid #333;
+            border-radius: 8px;
+            font-size: 16px;
+            resize: none;
+            overflow: auto;
+        }
+        button {
+            margin: 10px;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+            background-color: #007bff;
+        }
+        button:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+        .suggestions {
+            display: flex;
+            justify-content: center;
+            margin-top: 10px;
+        }
+        .suggestion-button {
+            margin: 0 5px;
+            padding: 10px 20px;
+            border: 1px solid #333;
+            border-radius: 5px;
+            background-color: #f8f9fa;
+            cursor: pointer;
+            color: black;
+        }
+        .suggestion-button:hover {
+            background-color: #e2e6ea;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Access Camera</h1>
+        <img id="video" src="{{ url_for('video_feed') }}" width="640" height="480" alt="Camera Feed">
+        <textarea id="translation" readonly></textarea>
+        <div id="suggestions" class="suggestions"></div>
+        <div>
+            <button id="translateButton" style="background-color: #007bff;">Start Translation</button>
+            <button id="backspaceButton">Backspace</button>
+            <button id="clearButton">Clear</button>
+            <button id="speakButton">Speak</button>
+        </div>
+        <p id="status">Tap to begin</p>
+        <audio id="sound" src="/static/sound/tap.mp3"></audio>
+    </div>
+
+    <script>
+        const translateButton = document.getElementById('translateButton');
+        const backspaceButton = document.getElementById('backspaceButton');
+        const clearButton = document.getElementById('clearButton');
+        const speakButton = document.getElementById('speakButton');
+        const status = document.getElementById('status');
+        const translation = document.getElementById('translation');
+        const suggestionsContainer = document.getElementById('suggestions');
+        const sound = document.getElementById('sound');
+        let translating = false;
+        let translationInterval = null;
+        let lastTranslation = "";
+        let currentFormingWord = "";
+
+        translateButton.addEventListener('click', () => {
+            translating = !translating;
+            if (translating) {
+                translateButton.textContent = 'Stop Translation';
+                translateButton.style.backgroundColor = 'red'; // Change button color to red
+                status.textContent = 'Translation is on';
+                startTranslation();
+            } else {
+                translateButton.textContent = 'Start Translation';
+                translateButton.style.backgroundColor = '#007bff'; // Change button color back to blue
+                status.textContent = 'Translation is off';
+                stopTranslation();
+            }
+        });
+
+        backspaceButton.addEventListener('click', () => {
+            const text = translation.value;
+            translation.value = text.slice(0, -1);  // Remove the last character
+            currentFormingWord = translation.value.trim(); // Update the forming word
+            updateSuggestions(currentFormingWord); // Update suggestions based on current forming word
+        });
+
+        clearButton.addEventListener('click', () => {
+            translation.value = '';  // Clear all content
+            suggestionsContainer.innerHTML = ''; // Clear suggestions
+            currentFormingWord = ''; // Reset forming word
+        });
+
+        speakButton.addEventListener('click', () => {
+            const textToSpeak = translation.value;
+            if (textToSpeak) {
+                const utterance = new SpeechSynthesisUtterance(textToSpeak);
+                window.speechSynthesis.speak(utterance);
+            }
+        });
+
+        function startTranslation() {
+            fetch('/start_translation', { method: 'POST' });
+            if (!translationInterval) {
+                translationInterval = setInterval(fetchTranslation, 1000);  // Fetch translation every second
+            }
+        }
+
+        function stopTranslation() {
+            fetch('/stop_translation', { method: 'POST' });
+            clearInterval(translationInterval);  // Stop fetching translations
+            translationInterval = null;
+        }
+
+        function fetchTranslation() {
+            if (translating) {
+                fetch('/get_translation')
+                    .then(response => response.json())
+                    .then(data => {
+                        const currentTranslation = data.translation || '';
+                        if (currentTranslation && currentTranslation !== lastTranslation) {
+                            translation.value += currentTranslation;  // Append new translation
+                            lastTranslation = currentTranslation;  // Update lastTranslation
+                            currentFormingWord = translation.value.trim(); // Update the forming word
+                            playSound();  // Play sound
+                            updateSuggestions(currentFormingWord); // Update suggestions based on current forming word
+                        }
+                    })
+                    .catch(error => console.error('Error fetching translation:', error));
+            }
+        }
+
+        function playSound() {
+            sound.currentTime = 0; // Rewind to the start
+            sound.play().catch(error => console.error('Error playing sound:', error));
+        }
+
+        function updateSuggestions(word) {
+            if (word.length > 0) {
+                fetch(`https://api.datamuse.com/sug?s=${word}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        // Limit to the first three suggestions
+                        const suggestions = data.slice(0, 3);
+                        suggestionsContainer.innerHTML = '';
+                        suggestions.forEach(suggestion => {
+                            const button = document.createElement('button');
+                            button.textContent = suggestion.word;
+                            button.className = 'suggestion-button';
+                            button.onclick = () => {
+                                translation.value = translation.value.slice(0, -word.length) + suggestion.word;
+                                currentFormingWord = suggestion.word; // Update forming word to the selected suggestion
+                                suggestionsContainer.innerHTML = ''; // Clear suggestions after selection
+                            };
+                            suggestionsContainer.appendChild(button);
+                        });
+                    })
+                    .catch(error => console.error('Error fetching suggestions:', error));
+            } else {
+                suggestionsContainer.innerHTML = ''; // Clear suggestions if no input
+            }
+        }
+    </script>
+</body>
+</html>
